@@ -11,6 +11,9 @@ class DBHelper:
         stmt = "CREATE TABLE IF NOT EXISTS users (id INTEGER NOT NULL PRIMARY KEY UNIQUE,username STR NOT NULL,warn INTEGER,ban STR,message_id INTEGER)"
         self.conn.execute(stmt)
         self.conn.commit()
+        stmt = "CREATE TABLE IF NOT EXISTS usersactivity (id INTEGER NOT NULL PRIMARY KEY UNIQUE,username STR NOT NULL,messages INTEGER)"
+        self.conn.execute(stmt)
+        self.conn.commit()
 
     def add_item(self, user_id, user_username, message_id):
         stmt = "INSERT INTO users (id, username, message_id) VALUES (?, ?, ?) ON CONFLICT(id) DO UPDATE SET message_id = excluded.message_id"
@@ -48,5 +51,11 @@ class DBHelper:
     def delete_warn(self,user_id, user_username, warn):
         stmt = "INSERT INTO users (id, username, warn) VALUES (?, ?, ?) ON CONFLICT(id) DO UPDATE SET id = excluded.id,warn = 0"
         args = (user_id, user_username, warn)
+        self.conn.execute(stmt, args)
+        self.conn.commit()
+
+    def activity_user(self, user_id, user_username):
+        stmt = "INSERT INTO usersactivity (id, username, messages) VALUES (?, ?, 1) ON CONFLICT(id) DO UPDATE SET id = excluded.id, messages = messages + 1"
+        args = (user_id, user_username)
         self.conn.execute(stmt, args)
         self.conn.commit()

@@ -816,6 +816,21 @@ dispatcher.add_handler(MessageHandler(Filters.status_update.new_chat_members, de
 dispatcher.add_handler(MessageHandler(Filters.status_update.left_chat_member, delete_service_message, run_async=True))
 
 
+## Delete service messages
+def user_activity_accounting(update, context):
+        section = str(update.message.chat.id)
+        user_id = update.message.from_user.id
+        user_username = update.message.from_user.username
+        in_section = section in config.sections()
+        command_name = inspect.currentframe().f_code.co_name
+        feature_flag = config.get(section, command_name, fallback='off') == 'on'
+        if in_section and feature_flag:
+                db.activity_user(user_id, user_username)
+
+# Default handler for users activity accounting
+dispatcher.add_handler(MessageHandler(Filters.text, user_activity_accounting, run_async=True))
+
+
 ## Delete spam message and Ban spamer with admin button
 ### Disable until create integration with spam bot from JS developers
 # def delete_ban_button(update, context):
